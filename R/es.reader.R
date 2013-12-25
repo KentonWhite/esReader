@@ -1,6 +1,3 @@
-library('ProjectTemplate')
-library('RElasticSearch')
-
 #' Read an ElasticSearch index described in a .es file.
 #'
 #' This function will load data from an ElasticSearch index based on configuration
