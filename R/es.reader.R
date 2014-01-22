@@ -109,7 +109,7 @@ es.reader <- function(data.file, filename, variable.name)
 
 .onLoad <- function(...)
 {
-	ProjectTemplate:::add.extension('es', es.reader)
+	.add.extension('es', es.reader)
 }
 
 
