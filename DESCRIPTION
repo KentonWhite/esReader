@@ -5,10 +5,11 @@ Version: 1.0
 Date: 2013-12-25
 Author: Kenton White
 Maintainer: Kenton White <jkentonwhite@gmail.com>
-Description: Creates an ElasticSearch Reader for ProjectTemplate. Install and include es-reader as
-a required package. Reads from a *.es file in the data folder:
+Description: Creates an ElasticSearch Reader for ProjectTemplate. Install and
+    include es-reader as
+a required package. Reads from a *.es file in the data folder: 
 License: Artistic-2.0
 Depends:
     R (>= 2.7),
-		ProjectTemplate,
-		RElasticSearch
+    ProjectTemplate,
+    RElasticSearch

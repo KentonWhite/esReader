@@ -20,13 +20,15 @@
 #'
 #' @return No value is returned; this function is called for its side effects.
 #'
+#' @importFrom ProjectTemplate translate.dcf
+#'
 #' @examples
 #' library('ProjectTemplate')
 #'
 #' \dontrun{es.reader('example.es', 'data/example.es', 'example')}
 es.reader <- function(data.file, filename, variable.name)
 {
-  server.info <- ProjectTemplate:::translate.dcf(filename)
+  server.info <- translate.dcf(filename)
 
   # Default value for 'port' in RElasticSearch is 9200L.
   if (is.null(server.info[['port']]))
