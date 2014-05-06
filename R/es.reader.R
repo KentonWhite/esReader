@@ -60,6 +60,11 @@ es.reader <- function(data.file, filename, variable.name)
 
   if (! is.null(query) && ! is.null(field))
   {
+    if (length(grep('\\{\\{.*\\}\\}', query))) {
+          require.package('whisker')
+          query <- whisker.render(query, data = .GlobalEnv, strict = FALSE)       
+    }
+      
     data.parcel <- try(query(index, query_string = list(default_field = field, query = query)))
 		
 		if (class(data.parcel) == 'AsIs') 

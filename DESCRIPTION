@@ -13,3 +13,5 @@ Depends:
     R (>= 2.7),
     ProjectTemplate,
     RElasticSearch
+Suggests:
+  whisker
