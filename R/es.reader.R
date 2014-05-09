@@ -62,7 +62,7 @@ es.reader <- function(data.file, filename, variable.name)
   {
     if (length(grep('\\{\\{.*\\}\\}', query))) {
           require.package('whisker')
-          query <- whisker.render(query, data = .GlobalEnv, strict = FALSE)       
+          query <- esReader.unescape(whisker.render(query, data = .GlobalEnv, strict = FALSE))       
     }
       
     data.parcel <- try(query(index, query_string = list(default_field = field, query = query)))
@@ -118,5 +118,14 @@ es.reader <- function(data.file, filename, variable.name)
 {
 	.add.extension('es', es.reader)
 }
+
+esReader.unescape <- function(x){
+  x <- gsub("&amp;", "&", x)
+  x <- gsub("&lt;", "<", x)
+  x <- gsub("&gt;", ">", x)
+  x <- gsub("&quot;", '"', x)
+  x
+}
+
 
 
