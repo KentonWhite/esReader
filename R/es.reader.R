@@ -62,7 +62,7 @@ es.reader <- function(data.file, filename, variable.name)
   {
     if (length(grep('\\{\\{.*\\}\\}', query))) {
           require.package('whisker')
-          query <- whisker.render(query, data = .GlobalEnv, strict = FALSE)       
+          query <- whisker.render(query, data = .GlobalEnv)       
     }
       
     data.parcel <- try(query(index, query_string = list(default_field = field, query = query)))
