@@ -11,7 +11,6 @@ a required package. Reads from a *.es file in the data folder:
 License: Artistic-2.0
 Depends:
     R (>= 2.7),
-    ProjectTemplate,
-    RElasticSearch
+    ProjectTemplate
 Suggests:
   whisker
