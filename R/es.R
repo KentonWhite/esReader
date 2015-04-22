@@ -18,25 +18,27 @@ setClass("ElasticSearchServer",
            prototype = prototype(host = "localhost", port = 9200L))
 
 
-setClass("URI", contains = 'character')
+setClass("Uri", contains = "character")
 
 
-setGeneric("asURI",
+setGeneric("asUri",
             function(obj, path) {
-               standardGeneric("asURI")
+               standardGeneric("asUri")
             })
 
-setMethod("asURI", "ANY",
+setMethod("asUri", "ANY",
            function(obj, path) {
-             sprintf("%s/%s", as(obj, "URI"), as(path, "character"))
+             sprintf("%s/%s", as(obj, "Uri"), as(path, "character"))
            })
 
-# setAs("ElasticSearchServer", "URI",
-#        function(from) {
-#            sprintf("http://%s:%d", from@host, from@port)
-#          })
 
-#setClass("MongoDBCollection",
+setAs("ElasticSearchServer", "Uri",
+       function(from) {
+         from
+           sprintf("http://%s:%d", from@host, from@port)
+         })
+
+# setClass("MongoDBCollection",
 #           representation(collection = "character"), contains = "MongoDBDatabase")
 
 setClass("ElasticSearchServerIndex",
@@ -47,15 +49,15 @@ setClass("ElasticSearchServerIndexType",
              representation(type = "character"),
                 contains = "ElasticSearchServerIndex")
 
-# setAs("ElasticSearchServerIndex", "URI",
-#        function(from) {
-#            sprintf("%s/%s", as(from@server, "URI"), from@index)
-#          })
-#
-# setAs("ElasticSearchServerIndexType", "URI",
-#        function(from) {
-#            sprintf("%s/%s/%s", as(from@server, "URI"), from@index, from@type)
-#          })
+setAs("ElasticSearchServerIndex", "Uri",
+       function(from) {
+           sprintf("%s/%s", as(from@server, "Uri"), from@index)
+         })
+
+setAs("ElasticSearchServerIndexType", "Uri",
+       function(from) {
+           sprintf("%s/%s/%s", as(from@server, "Uri"), from@index, from@type)
+         })
 
 # searchES("lm", server = rhelp)
 # searchES("title:help AND author:Sanyal", server = rhelp)
@@ -66,7 +68,7 @@ setGeneric("searchES",
 
 setMethod("searchES", c(index = "character", server = "ElasticSearchServer"),
            function(query, index, fields = character(), from = 0L, size = NA, server = new("ElasticSearchServer")) {
-             url = sprintf("%s/%s/_search", as(server, "URI"), index)
+             url = sprintf("%s/%s/_search", as(server, "Uri"), index)
              params = list(q = query)
              params[["from"]] = as.character(as.integer(from))
              if(!is.na(size))
@@ -92,7 +94,7 @@ setGeneric("getES",
 
 setMethod("getES", c("ElasticSearchServerIndex", "missing", "missing"),
            function(index, type, id, fields = character(), server = new("ElasticSearchServer"))  {
-             u = sprintf("%s", asURI(index, "URI"))
+             u = sprintf("%s", asUri(index, "Uri"))
              httpGET(u)
            })
 
@@ -104,20 +106,20 @@ setGeneric("insertES",
 
 setMethod("insertES", c("ElasticSearchServerIndex"),
            function(to = new("ElasticSearchServer"), value, id, index,  ...) {
-             url = sprintf("%s/%s", as(to, "URI"))
+             url = sprintf("%s/%s", as(to, "Uri"))
              httpPUT(url, toJSON(value))
            })
 
 setMethod("insertES", c("ElasticSearchServerIndexType"),
            function(to = new("ElasticSearchServer"), value, id, index,  ...) {
-             url = sprintf("%s/%s", as(server, "URI"), id)
+             url = sprintf("%s/%s", as(server, "Uri"), id)
              httpPUT(url, toJSON(value))
            })
 
 
 setMethod("length", "ElasticSearchServerIndex",
            function(x) {
-             txt = getURLContent(sprintf("%s/_count", as(x, "URI")))
+             txt = getURLContent(sprintf("%s/_Urit", as(x, "Uri")))
              fromJSON(txt)[["count"]]
            })
 
@@ -128,9 +130,9 @@ setGeneric("count",
 setMethod("count", c("ElasticSearchServerIndex"),
            function(x, query, ...) {
              url = if(missing(query))
-                       sprintf("%s/_count", as(x, "URI"))
+                       sprintf("%s/_Urit", as(x, "Uri"))
                    else
-                     sprintf("%s/_count?q=%s", as(x, "URI"), query)
+                     sprintf("%s/_countUris", as(x, "Uri"), query)
 
              txt = getURLContent(url)
              fromJSON(txt)[["count"]]
@@ -141,7 +143,7 @@ setMethod("count", c("ElasticSearchServerIndex"),
 
 # Get names of pages/items in an index,
 #  what are the "fields" in the rss
-#   getURLContent(sprintf("%s/_mapping", as(rhelp, "URI")))
+#   getURLContent(sprintf("%s/_mapping", as(rhelp, "Uri")))
 # query across multiple indices  /index,index/_search
 # CRUD
 #    create - settings (shards, replicas); mappings
@@ -157,7 +159,7 @@ setMethod("count", c("ElasticSearchServerIndex"),
 #  types - set and query on an index.
 #
 # [Done] settings
-#    getURLContent(sprintf("%s/_settings", as(rhelp, "URI")))
+#    getURLContent(sprintf("%s/_settings", as(rhelp, "Uri")))
 #
 #  specify mappings
 #
@@ -177,13 +179,13 @@ setGeneric("deleteIndex",
 
 setMethod("deleteIndex", "ElasticSearchServerIndex",
            function(obj, index, ...) {
-             ans = httpDELETE(as(obj, "URI"))
+             ans = httpDELETE(as(obj, "Uri"))
              fromJSON(ans)
            })
 
 setMethod("deleteIndex", c("ElasticSearchServer", "character"),
            function(obj, index, ...) {
-             ans = httpDELETE(sprintf("%s/%s", as(obj, "URI"), index))
+             ans = httpDELETE(sprintf("%s/%s", as(obj, "Uri"), index))
              fromJSON(ans)
            })
 
@@ -200,7 +202,7 @@ setMethod("getMapping", c("ElasticSearchServerIndex", "missing"),
 getESURL =
 function(serverIndex, cmd)
 {
-  txt = getURLContent(sprintf("%s/%s", as(serverIndex, "URI"), cmd))
+  txt = getURLContent(sprintf("%s/%s", as(serverIndex, "Uri"), cmd))
   fromJSON(txt)[[1]]
 }
 
@@ -225,11 +227,11 @@ setMethod("names", "ElasticSearchServerIndex",
 setMethod("length", "ElasticSearchServerIndex",
           function(x) {
 
-               a = fromJSON(getURL(sprintf("%s/_status", as(x, "URI"))))
+               a = fromJSON(getURL(sprintf("%s/_sUris", as(x, "Uri"))))
                as.integer(a$indices[[1]]$docs["num_docs"])
 
                # a different approach which queries and matches everything and gets the count.
-#               u = sprintf("%s/_search?search_type=count", as(x, "URI"))
+#               u = sprintf("%s/_search?search_type=Urit", as(x, "Uri"))
 #               tmp = httpGET(u, postfields = '{"query": { "match_all" : { }}}')
 #               as.integer(fromJSON(tmp)$hits$total)
              })
@@ -238,13 +240,13 @@ setMethod("[", c("ElasticSearchServerIndex", "missing", "missing"),
            function(x, i, j, ...) {
 
                  # find the number of elements
-              u = sprintf("%s/_search?search_type=count", as(x, "URI"))
+              u = sprintf("%s/_search?search_type=Urit", as(x, "Uri"))
               xx = fromJSON(httpGET(u, postfields = '{"query": { "match_all" : { }}}'))
                  # add 20% in case it grows in the time between requests
               num = as.integer(xx$hits$total * 1.2)
 
                  # Get/Query that many items
-              u = sprintf("%s/_search", as(x, "URI"))
+              u = sprintf("%s/_sUrih", as(x, "Uri"))
               xx = fromJSON(getForm(u, size = num, .opts = list(postfields = '{"query": { "match_all" : { }}}')))
               xx$hits$hits
            })
@@ -268,7 +270,7 @@ setMethod("query", "ElasticSearchServerIndex",
               query = toJSON(query)
 
                  # find out how many results we have
-              u = sprintf("%s/_search", as(x, "URI"))
+              u = sprintf("%s/_search", as(x, "Uri"))
               tmp = getForm(u, "search_type" = "count",
                              .opts = list(postfields = query), curl = curl)
               num = fromJSON(tmp)$hits$total
