@@ -1,7 +1,7 @@
 Package: esReader
 Type: Package
 Title: Provides an ElasticSearch Reader for ProjectTemplate
-Version: 1.0
+Version: 1.1
 Date: 2013-12-25
 Author: Kenton White
 Maintainer: Kenton White <jkentonwhite@gmail.com>
@@ -12,5 +12,8 @@ License: Artistic-2.0
 Depends:
     R (>= 2.7),
     ProjectTemplate
+    elastic
+    whisker
+    plyr
 Suggests:
-  whisker
+  

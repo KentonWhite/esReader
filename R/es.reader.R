@@ -36,16 +36,13 @@ es.reader <- function(data.file, filename, variable.name)
     server.info[['port']] <- 9200
   }
   
-  server <- new('ElasticSearchServer', 
-                     	host = server.info[['host']],
-                      port = as.integer(server.info[['port']])
-									)
-									
-  index <- new('ElasticSearchServerIndex', server=server, index = server.info[['index']])
+  elastic::connect(es_base = server.info[['host']], es_port = as.integer(server.info[['port']]))
+  
+  index <- server.info[['index']]
 
   query <- server.info[['query']]
   field <- server.info[['field']]
-	
+  
   if (is.null(query))
   {
     warning("'query' must be specified in a .es file")
@@ -61,63 +58,76 @@ es.reader <- function(data.file, filename, variable.name)
   if (! is.null(query) && ! is.null(field))
   {
     if (length(grep('\\{\\{.*\\}\\}', query))) {
-          require.package('whisker')
-          query <- whisker.render(query, data = .GlobalEnv)       
+      require.package('whisker')
+      query <- whisker.render(query, data = .GlobalEnv)       
     }
-      
-    data.parcel <- try(query(index, query_string = list(default_field = field, query = query)))
-		
-		if (class(data.parcel) == 'AsIs') 
-		{
-			warning(paste(query, ' returned empty result.', sep=''))
-			return()
-		}
+    
+    match <- list(query = list(
+      bool = list(
+        must = list(
+          query_string = list(
+            default_field = field,
+            query = query
+          )
+        )
+      )
+    ))
+    
+    data.parcel <- try(elastic::Search(index = index, body = match))
+                       
+                       if (class(data.parcel) == 'AsIs') 
+                       {
+                         warning(paste(query, ' returned empty result.', sep=''))
+                         return()
+                       }
 
-		if (class(data.parcel) == 'list')
-    {
-		
-			# structure is a list of lists
-			# Convert to DataFrame
-		
-			# Store names for later
-			names = names(data.parcel[[1]])
-			names = gsub('^_', '', names)
-		
-			data.parcel = as.data.frame(matrix(unlist(data.parcel), ncol=length(names), byrow = TRUE))
-			names(data.parcel) = names
-		
-	    assign(variable.name,
-	           data.parcel,
-	           envir = .GlobalEnv)
+                       if (class(data.parcel) == 'list')
+                       {
+                         
+                         # structure is a list of lists
+                         # Convert to DataFrame
+                         
+                         # Store names for later
+                         
+                         data.parcel <- plyr::ldply(data.parcel$hits$hits, as.data.frame)
+                         
+                         names = names(data.parcel)
+                         names = gsub('^X_', '', names)
+                         
+                         names(data.parcel) = names
+                         
+                         assign(variable.name,
+                                data.parcel,
+                                envir = .GlobalEnv)
+                       }
+                       
+                       else
+                       {
+                         warning(paste("Error loading '",
+                                       variable.name,
+                                       "' with query '",
+                                       query, "'.",
+                                       sep = ''))
+                         return()
+                       }
     }
-		
-    else
+
+    # If the table exists but is empty, do not create a variable.
+    # Or if the query returned no results, do not create a variable.
+    if (nrow(data.parcel) == 0)
     {
-      warning(paste("Error loading '",
-                    variable.name,
-                    "' with query '",
-                    query, "'.",
-                    sep = ''))
+      assign(variable.name,
+             NULL,
+             envir = .GlobalEnv)
       return()
     }
+
   }
 
-  # If the table exists but is empty, do not create a variable.
-  # Or if the query returned no results, do not create a variable.
-  if (nrow(data.parcel) == 0)
+  .onLoad <- function(...)
   {
-    assign(variable.name,
-           NULL,
-           envir = .GlobalEnv)
-    return()
+    .add.extension('es', es.reader)
   }
-
-}
-
-.onLoad <- function(...)
-{
-	.add.extension('es', es.reader)
-}
 
 
 
