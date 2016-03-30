@@ -73,7 +73,7 @@ es.reader <- function(data.file, filename, variable.name)
       )
     ))
     
-    data.parcel <- try(elastic::Search(index = index, body = match))
+    data.parcel <- try(elastic::Search(index = index, body = match, size = elastic::count(index)))
                        
                        if (class(data.parcel) == 'AsIs') 
                        {
