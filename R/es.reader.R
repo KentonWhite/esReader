@@ -74,7 +74,7 @@ es.reader <- function(data.file, filename, variable.name)
     ))
     
     data.parcel <- try({
-      size = elastic::count(index)
+      size = elastic::Search(index = index, body = match, size = 0)$hits$total 
       elastic::Search(index = index, body = match, size = size) 
     })
                        
