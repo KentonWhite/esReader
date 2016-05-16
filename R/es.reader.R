@@ -74,8 +74,18 @@ es.reader <- function(data.file, filename, variable.name)
     ))
     
     data.parcel <- try({
-      size = elastic::Search(index = index, body = match, size = 0)$hits$total 
-      elastic::Search(index = index, body = match, size = size) 
+      ## size = elastic::Search(index = index, body = match, size = 0)$hits$total 
+      ## elastic::Search(index = index, body = match, size = size) 
+      res <- Search(index = index, body = match, scroll="5m", search_type = "scan")
+      out <- list()
+      hits <- 1
+      while(hits != 0){
+        res <- scroll(scroll_id = res$`_scroll_id`)
+        hits <- length(res$hits$hits)
+        if(hits > 0)
+          out <- c(out, res$hits$hits)
+      }
+      out
     })
                        
                        if (class(data.parcel) == 'AsIs') 
@@ -92,7 +102,7 @@ es.reader <- function(data.file, filename, variable.name)
                          
                          # Store names for later
                          
-                         data.parcel <- plyr::ldply(data.parcel$hits$hits, as.data.frame)
+                         data.parcel <- plyr::ldply(data.parcel, as.data.frame)
                          
                          names = names(data.parcel)
                          names = gsub('^X_', '', names)
