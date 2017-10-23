@@ -73,14 +73,15 @@ es.reader <- function(data.file, filename, variable.name)
       )
     ))
     
+    
     data.parcel <- try({
       ## size = elastic::Search(index = index, body = match, size = 0)$hits$total 
       ## elastic::Search(index = index, body = match, size = size) 
-      res <- Search(index = index, body = match, scroll="5m", size = 1000)
+      res <- Search(index = index, body = match, time_scroll="5m", size = 1000)
       out <- list()
       hits <- 1
       while(hits != 0){
-        res <- scroll(scroll_id = res$`_scroll_id`)
+        res <- scroll(res$`_scroll_id`)
         hits <- length(res$hits$hits)
         if(hits > 0)
           out <- c(out, res$hits$hits)
